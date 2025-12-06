@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Board (XSS vulnerable)</h2>
+
+    <div id="board">loading...</div>
+
+    <script>
+        async function load() {
+            const res = await fetch("/messages");
+            const list = await res.json();
+
+            // ▼▼▼ ここが脆弱：innerHTML に user input をそのまま注入 ▼▼▼
+            document.getElementById("board").innerHTML =
+                list.map(x => `<p>${x}</p>`).join("");
+        }
+
+        load();
+    </script>
+</body>
+</html>
+

@@ -9,6 +9,9 @@ app.post("/ping", (req, res) => {
     const host = req.body.host;        // ← ユーザー入力をそのまま使用
     const cmd = `ping -c 1 ${host}`;   // ← ここが危険！
 
+    if (!/^[0-9a-zA-Z\.\-]+$/.test(host)) {
+        return res.status(400).send("invalid input");
+    }
     exec(cmd, (err, stdout, stderr) => {
         if (err) return res.send("Error: " + err.message);
         res.send("<pre>" + stdout + "</pre>");

@@ -7,12 +7,14 @@ app.use(express.urlencoded({ extended: true }));
 // ★ コマンドインジェクション脆弱
 app.post("/ping", (req, res) => {
     const host = req.body.host;        // ← ユーザー入力をそのまま使用
-    const cmd = `ping -c 1 ${host}`;   // ← ここが危険！
 
+    // ★ 入力バリデーション（ホワイトリスト）
     if (!/^[0-9a-zA-Z\.\-]+$/.test(host)) {
         return res.status(400).send("invalid input");
     }
-    exec(cmd, (err, stdout, stderr) => {
+
+    // ★ exec の代わりに execFile を使用（OS コマンド注入を防止）
+    execFile("ping", ["-c", "1", host], (err, stdout) => {
         if (err) return res.send("Error: " + err.message);
         res.send("<pre>" + stdout + "</pre>");
     });

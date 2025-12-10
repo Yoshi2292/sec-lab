@@ -5,18 +5,20 @@ const path = require("path");
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
-// ★ 脆弱：ファイル名をそのまま結合
-app.get("/view", (req, res) => {
-    const filename = req.query.file;     // ← 攻撃者コントロール
-    const fullPath = path.join(__dirname, "files", filename);
+// ★ 安全版：ホワイトリスト
+app.get("/view_safe", (req, res) => {
+    const filename = req.query.file;
 
-    // 本当は危険な読み取り
-    try {
-        const content = fs.readFileSync(fullPath, "utf8");
-        res.send(`<pre>${content}</pre>`);
-    } catch (e) {
-        res.status(404).send("File not found");
+    // 許可ファイル一覧
+    const allowed = ["sample.txt"];
+
+    if (!allowed.includes(filename)) {
+        return res.status(400).send("Access Denied");
     }
+
+    const fullPath = path.join(__dirname, "files", filename);
+    const content = fs.readFileSync(fullPath, "utf8");
+    res.send(`<pre>${content}</pre>`);
 });
 
 app.listen(4005, () => console.log("Path Traversal Lab at http://localhost:4005"));
